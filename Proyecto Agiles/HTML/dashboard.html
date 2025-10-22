@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>AgroFlux | Dashboard</title>
+  <link rel="stylesheet" href="../CSS/dashboard.css"/>
+  <meta name="color-scheme" content="light dark"/>
+</head>
+<body>
+  <aside class="sidebar" aria-label="Main navigation">
+    <div class="brand">
+      <span class="badge">AF</span>
+      <span class="brand-title">AgroFlux</span>
+      <button id="closeSidebar" class="icon-btn" aria-label="Close menu">✕</button>
+    </div>
+    <nav>
+      <ul>
+        <li class="active"><a href="../HTML/dashboard.html"><span>Dashboard</span></a></li>
+        <li><a href="../HTML/sensores.html"><span>Sensors</span></a></li>
+        <li><a href="../HTML/alertas.html"><span>Alerts</span></a></li>
+        <li><a href="../HTML/perfil.html"><span>Profile</span></a></li>
+      </ul>
+    </nav>
+    <footer class="sidebar-footer">
+      <small>v0.1 • Arduino</small>
+    </footer>
+  </aside>
+
+  <div class="page">
+    <header class="topbar">
+      <button id="openSidebar" class="icon-btn" aria-label="Open menu">☰</button>
+      <div class="search">
+        <input type="search" placeholder="Search… (sensors, alerts)"/>
+      </div>
+      <div class="user">
+        <button class="chip">admin@agroflux</button>
+      </div>
+    </header>
+
+    <main class="content" role="main">
+      <section class="section-header">
+        <div>
+          <h1>Dashboard</h1>
+          <p class="muted">Environmental conditions monitoring</p>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" id="refreshBtn">Refresh</button>
+        </div>
+      </section>
+
+      <section class="kpis">
+        <article class="card kpi">
+          <h3>Temperature</h3>
+          <div class="value"><span id="kpiTemp">24.5</span> °C</div>
+          <p class="delta up">Range: 18-30°C</p>
+        </article>
+        <article class="card kpi">
+          <h3>Humidity</h3>
+          <div class="value"><span id="kpiHumidity">65</span>%</div>
+          <p class="delta">Range: 40-80%</p>
+        </article>
+        <article class="card kpi">
+          <h3>Light (PPFD)</h3>
+          <div class="value"><span id="kpiLight">850</span> μmol/m²/s</div>
+          <p class="delta">Range: 400-1200 μmol/m²/s</p>
+        </article>
+        <article class="card kpi">
+          <h3>Status</h3>
+          <div class="value"><span id="kpiStatus">Optimal</span></div>
+          <p class="delta ok">No alerts</p>
+        </article>
+      </section>
+
+      <section class="grid">
+        <article class="card list-card">
+          <div class="card-header">
+            <h3>Sensor Readings</h3>
+            <button class="btn btn-ghost small" id="exportBtn">Export</button>
+          </div>
+          <div class="sensor-readings">
+            <div class="sensor-item">
+              <span class="sensor-name">Temperature</span>
+              <span class="sensor-value">24.5°C</span>
+              <span class="sensor-status ok">Normal</span>
+            </div>
+            <div class="sensor-item">
+              <span class="sensor-name">Humidity</span>
+              <span class="sensor-value">65%</span>
+              <span class="sensor-status ok">Normal</span>
+            </div>
+            <div class="sensor-item">
+              <span class="sensor-name">Light (PPFD)</span>
+              <span class="sensor-value">850 μmol/m²/s</span>
+              <span class="sensor-status ok">Normal</span>
+            </div>
+            <div class="sensor-item">
+              <span class="sensor-name">Last update</span>
+              <span class="sensor-value" id="lastUpdate">2 min ago</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card list-card">
+          <div class="card-header">
+            <h3>Recent Alerts</h3>
+            <button class="btn btn-ghost small">View all</button>
+          </div>
+          <ul class="list" id="alertsList">
+            <li><span class="badge ok">OK</span> No anomalies detected • 2 h ago</li>
+          </ul>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script src="../JavaScript/dashboard.js"></script>
+</body>
+</html>

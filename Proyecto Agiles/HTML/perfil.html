@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AgroFlux | Profile</title>
+  <link rel="stylesheet" href="../CSS/perfil.css" />
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="badge">AF</div>
+      <div class="brand-title">AgroFlux</div>
+      <button id="closeSidebar" class="icon-btn" aria-label="Close menu">✕</button>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="../HTML/dashboard.html">Dashboard</a></li>
+        <li><a href="../HTML/sensores.html">Sensors</a></li>
+        <li><a href="../HTML/alertas.html">Alerts</a></li>
+        <li class="active"><a href="../HTML/perfil.html">Profile</a></li>
+      </ul>
+    </nav>
+    <div class="sidebar-footer">v0.1 • Arduino</div>
+  </aside>
+
+  <!-- Page -->
+  <main class="page">
+    <header class="topbar">
+      <button id="openSidebar" class="icon-btn" aria-label="Open menu">☰</button>
+      <div class="search">
+        <input type="search" placeholder="Search…" />
+      </div>
+      <span class="chip">admin@agroflux</span>
+    </header>
+
+    <section class="content">
+      <!-- Profile header -->
+      <div class="profile-header">
+        <h1>My Profile</h1>
+        <p class="profile-subtitle">Manage your personal information and security</p>
+      </div>
+
+      <div class="profile-layout">
+        <!-- Personal Information -->
+        <div class="card profile-section">
+          <div class="card-header">
+            <h3>Personal Information</h3>
+          </div>
+          <div class="profile-grid">
+            <div class="field-group">
+              <label for="inpNombre" class="field-label">Full name</label>
+              <input id="inpNombre" type="text" class="field-input" placeholder="Your full name" value="AgroFlux Administrator" />
+            </div>
+            
+            <div class="field-group">
+              <label for="inpEmail" class="field-label">Email address</label>
+              <input id="inpEmail" type="email" class="field-input" placeholder="your.email@example.com" value="admin@agroflux.com" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Preferences -->
+        <div class="card profile-section">
+          <div class="card-header">
+            <h3>Preferences</h3>
+          </div>
+          <div class="profile-grid">
+            <div class="field-group">
+              <label class="field-label">Interface theme</label>
+              <select class="field-input">
+                <option value="dark">Dark</option>
+                <option value="light">Light</option>
+                <option value="auto">Auto</option>
+              </select>
+            </div>
+            
+            <div class="field-group">
+              <label class="field-label">Language</label>
+              <select class="field-input">
+                <option value="en">English</option>
+                <option value="es">Español</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Password Change -->
+        <div class="card profile-section profile-security">
+          <div class="card-header">
+            <h3>Security</h3>
+          </div>
+          <div class="profile-grid">
+            <div class="field-group">
+              <label for="pwdActual" class="field-label">Current password</label>
+              <input id="pwdActual" type="password" class="field-input" placeholder="Enter your current password" />
+            </div>
+            
+            <div class="field-group">
+              <label for="pwdNueva" class="field-label">New password</label>
+              <input id="pwdNueva" type="password" class="field-input" placeholder="Enter new password" />
+              <div class="password-strength">
+                <div class="strength-weak"></div>
+              </div>
+            </div>
+            
+            <div class="field-group">
+              <label for="pwdConfirm" class="field-label">Confirm new password</label>
+              <input id="pwdConfirm" type="password" class="field-input" placeholder="Repeat new password" />
+            </div>
+          </div>
+          <div class="card-footer">
+            <button id="btnCambiarPwd" class="btn btn-primary">Change password</button>
+            <span id="pwdMsg" class="muted small"></span>
+          </div>
+        </div>
+
+        <!-- System Information -->
+        <div class="card profile-section profile-system">
+          <div class="card-header">
+            <h3>System Information</h3>
+          </div>
+          <div class="system-info">
+            <div class="info-item">
+              <span class="info-label">Version:</span>
+              <span class="info-value">AgroFlux v0.1</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Platform:</span>
+              <span class="info-value">Arduino UNO + Sensors</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Connected sensors:</span>
+              <span class="info-value">Temperature, Humidity, Light</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">System status:</span>
+              <span class="info-value">
+                <span class="status-indicator status-online">● Online</span>
+              </span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Last update:</span>
+              <span class="info-value" id="lastUpdate">Loading...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Account Actions -->
+        <div class="card danger-zone">
+          <div class="card-header">
+            <h3>Account Actions</h3>
+          </div>
+          <div class="account-actions">
+            <button id="btnExportData" class="btn btn-ghost">Export my data</button>
+            <button id="btnLogout" class="btn btn-ghost">Sign out</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toast Notification -->
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <script src="../JavaScript/perfil.js"></script>
+</body>
+</html>   

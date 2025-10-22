@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>AgroFlux | Sensors</title>
+  <link rel="stylesheet" href="../CSS/sensores.css"/>
+  <meta name="color-scheme" content="light dark"/>
+</head>
+<body>
+  <aside class="sidebar" aria-label="Main navigation">
+    <div class="brand">
+      <span class="badge">AF</span>
+      <span class="brand-title">AgroFlux</span>
+      <button id="closeSidebar" class="icon-btn" aria-label="Close menu">✕</button>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="../HTML/dashboard.html"><span>Dashboard</span></a></li>
+        <li class="active"><a href="../HTML/sensores.html"><span>Sensors</span></a></li>
+        <li><a href="../HTML/alertas.html"><span>Alerts</span></a></li>
+        <li><a href="../HTML/perfil.html"><span>Profile</span></a></li>
+      </ul>
+    </nav>
+    <footer class="sidebar-footer">
+      <small>v0.1 • Arduino</small>
+    </footer>
+  </aside>
+
+  <div class="page">
+    <header class="topbar">
+      <button id="openSidebar" class="icon-btn" aria-label="Open menu">☰</button>
+      <div class="search">
+        <input type="search" id="searchSensors" placeholder="Search sensors…"/>
+      </div>
+      <div class="user">
+        <button class="chip">admin@agroflux</button>
+      </div>
+    </header>
+
+    <main class="content" role="main">
+      <section class="section-header">
+        <div>
+          <h1>Sensors Management</h1>
+          <p class="muted">Monitoring and configuration of connected sensors</p>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" id="refreshSensorsBtn">Refresh</button>
+          <button class="btn btn-ghost" id="addSensorBtn">+ Add Sensor</button>
+        </div>
+      </section>
+
+      <!-- Filters and Configuration -->
+      <section class="filters-section">
+        <div class="card">
+          <div class="filters-grid">
+            <div class="filter-group">
+              <label for="statusFilter">Status</label>
+              <select id="statusFilter">
+                <option value="all">All</option>
+                <option value="online">Online</option>
+                <option value="offline">Offline</option>
+                <option value="warning">With alerts</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="typeFilter">Type</label>
+              <select id="typeFilter">
+                <option value="all">All</option>
+                <option value="temperature">Temperature</option>
+                <option value="humidity">Humidity</option>
+                <option value="light">Light</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="locationFilter">Location</label>
+              <select id="locationFilter">
+                <option value="all">All</option>
+                <option value="lot-a">Lot A</option>
+                <option value="lot-b">Lot B</option>
+                <option value="lot-c">Lot C</option>
+                <option value="greenhouse">Greenhouse</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sensors Summary -->
+      <section class="sensors-summary">
+        <div class="summary-cards">
+          <div class="summary-card">
+            <div class="summary-icon online">📡</div>
+            <div class="summary-info">
+              <div class="summary-value" id="totalOnline">8</div>
+              <div class="summary-label">Online</div>
+            </div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-icon offline">🔌</div>
+            <div class="summary-info">
+              <div class="summary-value" id="totalOffline">2</div>
+              <div class="summary-label">Offline</div>
+            </div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-icon warning">⚠️</div>
+            <div class="summary-info">
+              <div class="summary-value" id="totalWarning">3</div>
+              <div class="summary-label">With alerts</div>
+            </div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-icon total">🔢</div>
+            <div class="summary-info">
+              <div class="summary-value" id="totalSensors">10</div>
+              <div class="summary-label">Total</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sensors List -->
+      <section class="sensors-list-section">
+        <div class="card">
+          <div class="card-header">
+            <h3>Connected Sensors</h3>
+            <div class="list-actions">
+              <button class="btn btn-ghost small" id="exportSensorsBtn">Export</button>
+              <button class="btn btn-ghost small" id="configureAllBtn">Configure</button>
+            </div>
+          </div>
+          
+          <div class="sensors-table-container">
+            <table class="sensors-table" id="sensorsTable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Location</th>
+                  <th>Current Value</th>
+                  <th>Status</th>
+                  <th>Last Reading</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="sensorsTableBody">
+                <!-- Sensors are loaded dynamically with JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sensor Details (Modal) -->
+      <div id="sensorModal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 id="modalTitle">Sensor Details</h3>
+            <button class="icon-btn" id="closeModal">&times;</button>
+          </div>
+          <div class="modal-body" id="modalBody">
+            <!-- Dynamic content -->
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-ghost" id="cancelBtn">Cancel</button>
+            <button class="btn btn-primary" id="saveSensorBtn">Save</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../JavaScript/sensores.js"></script>
+</body>
+</html>

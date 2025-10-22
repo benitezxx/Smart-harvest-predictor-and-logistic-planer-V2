@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AgroFlux | Alerts</title>
+  <link rel="stylesheet" href="../CSS/alertas.css" />
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="badge">AF</div>
+      <div class="brand-title">AgroFlux</div>
+      <button id="closeSidebar" class="icon-btn" aria-label="Close menu">✕</button>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="../HTML/dashboard.html">Dashboard</a></li>
+        <li><a href="../HTML/sensores.html">Sensors</a></li>
+        <li class="active"><a href="../HTML/alertas.html">Alerts</a></li>
+        <li><a href="../HTML/perfil.html">Profile</a></li>
+      </ul>
+    </nav>
+    <div class="sidebar-footer">v0.1 • Arduino</div>
+  </aside>
+
+  <!-- Page -->
+  <main class="page">
+    <header class="topbar">
+      <button id="openSidebar" class="icon-btn" aria-label="Open menu">☰</button>
+      <div class="search">
+        <input id="q" type="search" placeholder="Search by message, sensor or location…" />
+      </div>
+      <span class="chip">admin@agroflux</span>
+    </header>
+
+    <section class="content">
+      <div class="section-header">
+        <div>
+          <h1>Alerts Center</h1>
+          <p class="muted">Sensor alerts and environmental conditions</p>
+        </div>
+        <div class="actions">
+          <button id="btnExportCSV" class="btn btn-ghost small">Export</button>
+          <button id="btnResolveSelected" class="btn btn-primary small">Mark as resolved</button>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpis">
+        <div class="card kpi"><div class="kpi-title">Critical</div><div class="value" id="kpiAlta">0</div></div>
+        <div class="card kpi"><div class="kpi-title">Warnings</div><div class="value" id="kpiMedia">0</div></div>
+        <div class="card kpi"><div class="kpi-title">Normal</div><div class="value" id="kpiBaja">0</div></div>
+        <div class="card kpi"><div class="kpi-title">Active</div><div class="value" id="kpiAbiertas">0</div></div>
+      </div>
+
+      <!-- Filters -->
+      <div class="card filters">
+        <div class="grid grid-6">
+          <label class="field">
+            <span>Type</span>
+            <select id="fTipo">
+              <option value="">All</option>
+              <option value="temperature">Temperature</option>
+              <option value="humidity">Humidity</option>
+              <option value="light">Light</option>
+              <option value="sensor">Sensor</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Severity</span>
+            <select id="fSeveridad">
+              <option value="">All</option>
+              <option value="high">Critical</option>
+              <option value="medium">Warning</option>
+              <option value="low">Normal</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Status</span>
+            <select id="fEstado">
+              <option value="">All</option>
+              <option value="open">Active</option>
+              <option value="resolved">Resolved</option>
+              <option value="silenced">Silenced</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Location</span>
+            <select id="fZona">
+              <option value="">All</option>
+              <option value="lot-a">Lot A</option>
+              <option value="lot-b">Lot B</option>
+              <option value="lot-c">Lot C</option>
+              <option value="greenhouse">Greenhouse</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>From</span>
+            <input id="fDesde" type="date" />
+          </label>
+          <label class="field">
+            <span>To</span>
+            <input id="fHasta" type="date" />
+          </label>
+        </div>
+      </div>
+
+      <div class="grid grid-main">
+        <!-- Alerts table -->
+        <div class="card">
+          <div class="table-header">
+            <div class="left">
+              <label class="chk"><input type="checkbox" id="chkAll" /> <span>Select all</span></label>
+            </div>
+            <div class="right">
+              <button id="btnSilenceSelected" class="btn small btn-ghost">Silence</button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table id="tblAlertas">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th data-sort="date">Date</th>
+                  <th data-sort="type">Type</th>
+                  <th data-sort="severity">Severity</th>
+                  <th data-sort="zone">Location</th>
+                  <th data-sort="message">Message</th>
+                  <th data-sort="status">Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div class="table-footer">
+            <div class="muted small" id="pageInfo">—</div>
+            <div class="pager">
+              <button id="prevPage" class="btn small btn-ghost">Previous</button>
+              <button id="nextPage" class="btn small btn-ghost">Next</button>
+              <select id="pageSize" class="page-size">
+                <option value="10">10 / page</option>
+                <option value="20">20 / page</option>
+                <option value="50">50 / page</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detail panel -->
+        <div class="card details" id="panelDetalle">
+          <div class="card-header">
+            <strong>Alert Details</strong>
+          </div>
+          <div class="detail-body">
+            <div class="muted">Select an alert to view details.</div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="muted small">* Monitoring system with Arduino UNO sensors</footer>
+    </section>
+  </main>
+
+  <script src="../JavaScript/alertas.js"></script>
+</body>
+</html>

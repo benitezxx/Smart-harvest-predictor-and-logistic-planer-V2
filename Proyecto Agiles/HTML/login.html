@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AgroFlux | Sign In</title>
+  <meta name="color-scheme" content="light dark" />
+  <link rel="stylesheet" href="../CSS/login.css">
+</head>
+<body>
+  <main class="card" role="main" aria-labelledby="title">
+    <div class="logo" aria-hidden="true">
+      <div class="logo-badge" title="AgroFlux">AF</div>
+      <h1 id="title">AgroFlux</h1>
+    </div>
+    <p class="subtitle">Sign in to continue</p>
+
+    <form id="loginForm" novalidate>
+      <div class="field">
+        <label for="userId">User ID</label>
+        <div class="control">
+          <input id="userId" name="userId" type="text" inputmode="text" autocomplete="username"
+                 placeholder="Ex. AGR-000123" aria-describedby="userIdHelp" required />
+        </div>
+        <div id="userIdHelp" class="help">Your internal identifier or corporate email.</div>
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="control">
+          <input id="password" name="password" type="password" autocomplete="current-password"
+                 placeholder="Enter your password" required minlength="6" />
+          <button type="button" class="icon-btn" id="togglePwd" aria-label="Show or hide password" title="Show/hide password">👁️</button>
+        </div>
+        <div id="passwordError" class="error" aria-live="polite"></div>
+      </div>
+
+      <div class="row">
+        <label class="meta">
+          <input type="checkbox" id="remember" class="checkbox" />
+          <span>Remember me</span>
+        </label>
+
+        <button id="recoverBtn" type="button" class="btn btn-ghost">Recover password</button>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" type="submit">Sign In</button>
+      </div>
+      <hr class="divider" />
+      <p class="help">Having trouble signing in? Use "Recover password".</p>
+      <div id="formError" class="error" aria-live="polite"></div>
+    </form>
+  </main>
+
+  <!-- Recover Password Modal -->
+  <div id="recoverModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="recoverTitle" aria-hidden="true">
+    <div class="modal">
+      <h2 id="recoverTitle">Recover Password</h2>
+      <p>Enter your ID or email to receive a reset link.</p>
+      <div class="field">
+        <label for="recoverInput">ID or email</label>
+        <div class="control">
+          <input id="recoverInput" type="text" placeholder="your.id@company.com" />
+        </div>
+        <div id="recoverError" class="error"></div>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button type="button" class="btn btn-ghost" id="cancelRecover">Cancel</button>
+        <button type="button" class="btn btn-primary" id="sendRecover">Send link</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../JavaScript/login.js"></script>
+</body>
+</html>
