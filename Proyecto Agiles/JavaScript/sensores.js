@@ -1,3 +1,5 @@
+const API = 'http://127.0.0.1:8000';
+
 // --- Responsive sidebar ---
 const sidebar = document.querySelector('.sidebar');
 const openSidebarBtn = document.getElementById('openSidebar');

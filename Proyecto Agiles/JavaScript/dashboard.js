@@ -1,270 +1,259 @@
-// --- Responsive sidebar ---
-const sidebar = document.querySelector('.sidebar');
-const openSidebarBtn = document.getElementById('openSidebar');
-const closeSidebarBtn = document.getElementById('closeSidebar');
-openSidebarBtn?.addEventListener('click', ()=> sidebar.classList.add('open'));
-closeSidebarBtn?.addEventListener('click', ()=> sidebar.classList.remove('open'));
+// === Config ===
+const API = 'http://127.0.0.1:8000';
 
-// --- Action buttons ---
-document.getElementById('refreshBtn')?.addEventListener('click', simulateRefresh);
-document.getElementById('exportBtn')?.addEventListener('click', simulateExport);
-
-// --- CORRECTED optimal ranges for agriculture ---
-const optimalRanges = {
-  temperature: { min: 18, max: 30 },        // °C - for general crops
-  humidity: { min: 40, max: 80 },           // % RH - safe range
-  light: { min: 400, max: 1200 }            // PPFD (μmol/m²/s) - for fruit crops
+// Rango objetivo (ajústalos a tu cultivo si quieres)
+const THRESHOLDS = {
+  temperature_c: { min: 18, max: 30 },   // °C
+  humidity: { min: 40, max: 80 },        // %
+  ppfd: { min: 400, max: 1200 },         // μmol/m²/s (umbral del UI)
+  // Para luz en lux (fallback si no convertimos a PPFD):
+  light_lux: { min: 2000, max: 65000 }
 };
 
-// --- Mock data (replace with real Arduino data) ---
-let sensorData = {
-  temperature: 24.5,
-  humidity: 65,
-  light: 850,  // Now in PPFD (μmol/m²/s)
-  lastUpdate: new Date()
-};
-
-// --- Lux to PPFD conversion if your sensor measures in lux ---
+// Conversión aproximada LUX -> PPFD (depende de espectro/LED/sol; esto es orientativo)
 function luxToPPFD(lux) {
-  // Approximate conversion for natural sunlight
-  // Coefficient: 0.0185 μmol/m²/s per lux
-  return Math.round(lux * 0.0185);
+  if (lux == null) return null;
+  // factor típico 0.0185 para luz solar/mixta (valor aproximado, no de laboratorio)
+  return +(lux * 0.0185).toFixed(1);
 }
 
-// --- Configuration by crop type ---
-const cropSettings = {
-  'tomato': { 
-    temperature: { min: 20, max: 28 },
-    humidity: { min: 50, max: 70 },
-    light: { min: 600, max: 1000 }
-  },
-  'lettuce': {
-    temperature: { min: 15, max: 25 },
-    humidity: { min: 40, max: 80 },
-    light: { min: 200, max: 600 }
-  },
-  'pepper': {
-    temperature: { min: 18, max: 30 },
-    humidity: { min: 45, max: 75 },
-    light: { min: 400, max: 1200 }
-  }
-};
-
-let currentCrop = 'pepper'; // Default crop
-
-// --- Update interface with data ---
-function updateUI() {
-  document.getElementById('kpiTemp').textContent = sensorData.temperature.toFixed(1);
-  document.getElementById('kpiHumidity').textContent = Math.round(sensorData.humidity);
-  document.getElementById('kpiLight').textContent = Math.round(sensorData.light);
-  
-  // Update general status
-  const status = checkOverallStatus();
-  document.getElementById('kpiStatus').textContent = status.text;
-  document.querySelector('.delta.ok').textContent = status.message;
-  
-  // Update sensor readings
-  updateSensorReadings();
-  
-  // Update alerts
-  updateAlerts();
-  
-  // Update last update
-  updateLastUpdate();
+// Utilidades
+function fmt(v, unit = '') {
+  if (v == null || Number.isNaN(v)) return '-';
+  return unit ? `${v} ${unit}` : String(v);
 }
 
-// --- Check overall status ---
-function checkOverallStatus() {
-  const tempStatus = checkSensorStatus('temperature', sensorData.temperature);
-  const humidityStatus = checkSensorStatus('humidity', sensorData.humidity);
-  const lightStatus = checkSensorStatus('light', sensorData.light);
-  
-  if (tempStatus === 'danger' || humidityStatus === 'danger' || lightStatus === 'danger') {
-    return { text: 'Critical', message: 'Check sensors' };
-  } else if (tempStatus === 'warn' || humidityStatus === 'warn' || lightStatus === 'warn') {
-    return { text: 'Warning', message: 'Monitor' };
-  } else {
-    return { text: 'Optimal', message: 'No alerts' };
-  }
+function inRange(value, {min, max}) {
+  if (value == null) return true; // si no hay dato, no marcamos como fuera de rango
+  return value >= min && value <= max;
 }
 
-// --- Check specific sensor status ---
-function checkSensorStatus(sensorType, value) {
-  const range = optimalRanges[sensorType];
-  const margin = (range.max - range.min) * 0.1; // 10% margin
-  
-  if (value < range.min - margin || value > range.max + margin) {
-    return 'danger';
-  } else if (value < range.min || value > range.max) {
-    return 'warn';
-  } else {
-    return 'ok';
-  }
+function statusClass(ok) {
+  return ok ? 'ok' : 'warn';
 }
 
-// --- Update sensor readings ---
-function updateSensorReadings() {
-  const sensorItems = document.querySelectorAll('.sensor-item');
-  
-  // Temperature
-  const tempStatus = checkSensorStatus('temperature', sensorData.temperature);
-  sensorItems[0].querySelector('.sensor-value').textContent = `${sensorData.temperature.toFixed(1)}°C`;
-  updateSensorStatus(sensorItems[0], tempStatus);
-  
-  // Humidity
-  const humidityStatus = checkSensorStatus('humidity', sensorData.humidity);
-  sensorItems[1].querySelector('.sensor-value').textContent = `${Math.round(sensorData.humidity)}%`;
-  updateSensorStatus(sensorItems[1], humidityStatus);
-  
-  // Light (PPFD)
-  const lightStatus = checkSensorStatus('light', sensorData.light);
-  sensorItems[2].querySelector('.sensor-value').textContent = `${Math.round(sensorData.light)} μmol/m²/s`;
-  updateSensorStatus(sensorItems[2], lightStatus);
+function timeAgo(ts) {
+  const d = new Date(ts);
+  if (isNaN(d)) return '-';
+  const diff = (Date.now() - d.getTime())/1000;
+  if (diff < 60) return `${Math.floor(diff)} s ago`;
+  if (diff < 3600) return `${Math.floor(diff/60)} min ago`;
+  return `${Math.floor(diff/3600)} h ago`;
 }
 
-// --- Update visual sensor status ---
-function updateSensorStatus(sensorItem, status) {
-  const statusElement = sensorItem.querySelector('.sensor-status');
-  statusElement.className = 'sensor-status ' + status;
-  
-  switch(status) {
-    case 'danger':
-      statusElement.textContent = 'Critical';
+// DOM refs
+const elKpiTemp = document.getElementById('kpiTemp');
+const elKpiHumidity = document.getElementById('kpiHumidity');
+const elKpiLight = document.getElementById('kpiLight');
+const elKpiStatus = document.getElementById('kpiStatus');
+const elLastUpdate = document.getElementById('lastUpdate');
+const elAlertsList = document.getElementById('alertsList');
+const btnRefresh = document.getElementById('refreshBtn');
+const btnExport = document.getElementById('exportBtn');
+
+async function fetchLatest() {
+  const res = await fetch(`${API}/api/readings/latest`);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+function deriveOverallStatus(items) {
+  let anyWarn = false;
+  for (const r of items) {
+    const ppfd = luxToPPFD(r.light_lux);
+    const okTemp = inRange(r.temperature_c, THRESHOLDS.temperature_c);
+    const okHum  = inRange(r.humidity, THRESHOLDS.humidity);
+    // Preferimos evaluar PPFD si lo podemos calcular; si no, usamos lux
+    const okLight = ppfd != null
+      ? inRange(ppfd, THRESHOLDS.ppfd)
+      : inRange(r.light_lux, THRESHOLDS.light_lux);
+
+    if (!(okTemp && okHum && okLight)) {
+      anyWarn = true;
       break;
-    case 'warn':
-      statusElement.textContent = 'Alert';
-      break;
-    case 'ok':
-      statusElement.textContent = 'Normal';
-      break;
+    }
+  }
+  return anyWarn ? {label: 'Check', className: 'warn'} : {label: 'Optimal', className: 'ok'};
+}
+
+function renderKPIs(items) {
+  // Tomamos la última lectura (si hay varias, la primera suele ser la más reciente por sensor)
+  if (!items || !items.length) {
+    elKpiTemp && (elKpiTemp.textContent = '-');
+    elKpiHumidity && (elKpiHumidity.textContent = '-');
+    elKpiLight && (elKpiLight.textContent = '-');
+    elKpiStatus && (elKpiStatus.textContent = 'No data');
+    elLastUpdate && (elLastUpdate.textContent = '-');
+    return;
+  }
+
+  // Estrategia: si hay varios sensores, prioriza mostrar:
+  // - temp y hum de un sensor DHT (si existe) o del primero
+  // - luz del sensor que tenga light_lux
+  const byHas = (k) => items.find(r => r[k] != null);
+
+  const tempRow = byHas('temperature_c') || items[0];
+  const humRow  = byHas('humidity') || items[0];
+  const luxRow  = byHas('light_lux') || items[0];
+
+  const temp = tempRow?.temperature_c ?? null;
+  const hum  = humRow?.humidity ?? null;
+  const lux  = luxRow?.light_lux ?? null;
+  const ppfd = luxToPPFD(lux);
+
+  if (elKpiTemp) elKpiTemp.textContent = (temp ?? '-');
+  if (elKpiHumidity) elKpiHumidity.textContent = (hum ?? '-');
+
+  // El UI dice “Light (PPFD)”; mostramos PPFD si podemos calcularlo, si no mostramos lux
+  if (elKpiLight) elKpiLight.textContent = (ppfd ?? lux ?? '-');
+
+  // Última actualización (tomamos el máximo ts)
+  const latestTs = items.map(r => new Date(r.ts).getTime()).filter(x => !isNaN(x)).sort((a,b)=>b-a)[0];
+  if (elLastUpdate) elLastUpdate.textContent = latestTs ? timeAgo(latestTs) : '-';
+
+  const overall = deriveOverallStatus(items);
+  if (elKpiStatus) elKpiStatus.textContent = overall.label;
+  // Puedes también cambiar clases en el KPI Status si tu CSS lo usa
+}
+
+function renderList(items) {
+  // Rellena la lista de lecturas (card “Sensor Readings”)
+  const container = document.querySelector('.sensor-readings');
+  if (!container) return;
+
+  container.innerHTML = ''; // limpiamos lo estático del HTML
+
+  // Orden por timestamp descendente
+  const sorted = [...items].sort((a,b)=> new Date(b.ts) - new Date(a.ts));
+
+  for (const r of sorted) {
+    const ppfd = luxToPPFD(r.light_lux);
+    const okTemp = inRange(r.temperature_c, THRESHOLDS.temperature_c);
+    const okHum  = inRange(r.humidity, THRESHOLDS.humidity);
+    const okLight = ppfd != null
+      ? inRange(ppfd, THRESHOLDS.ppfd)
+      : inRange(r.light_lux, THRESHOLDS.light_lux);
+
+    // Un bloque por cada lectura “agregada” (puedes agrupar por sensor si quieres)
+    const row = document.createElement('div');
+    row.className = 'sensor-item';
+
+    const problems = [];
+    if (!okTemp && r.temperature_c != null) problems.push('Temp');
+    if (!okHum && r.humidity != null) problems.push('Humidity');
+    if (!okLight && (ppfd != null || r.light_lux != null)) problems.push('Light');
+
+    row.innerHTML = `
+      <span class="sensor-name">${r.sensor_name || ('Sensor ' + r.sensor_id)}</span>
+      <span class="sensor-value">
+        ${r.temperature_c != null ? `🌡️ ${r.temperature_c} °C` : ''}
+        ${r.humidity != null ? ` · 💧 ${r.humidity} %` : ''}
+        ${
+          (ppfd != null)
+          ? ` · 💡 ${ppfd} μmol/m²/s`
+          : (r.light_lux != null ? ` · 💡 ${r.light_lux} lux` : '')
+        }
+        · 🕒 ${new Date(r.ts).toLocaleString()}
+      </span>
+      <span class="sensor-status ${statusClass(problems.length === 0)}">
+        ${problems.length ? 'Check' : 'Normal'}
+      </span>
+    `;
+    container.appendChild(row);
   }
 }
 
-// --- Update alerts ---
-function updateAlerts() {
-  const alertsList = document.getElementById('alertsList');
-  alertsList.innerHTML = '';
-  
-  const tempStatus = checkSensorStatus('temperature', sensorData.temperature);
-  const humidityStatus = checkSensorStatus('humidity', sensorData.humidity);
-  const lightStatus = checkSensorStatus('light', sensorData.light);
-  
-  // Generate alerts based on status
-  if (tempStatus === 'danger') {
-    addAlert(`CRITICAL Temperature: ${sensorData.temperature.toFixed(1)}°C`, 'danger');
-  } else if (tempStatus === 'warn') {
-    addAlert(`Temperature ALERT: ${sensorData.temperature.toFixed(1)}°C`, 'warn');
+function renderAlerts(items) {
+  if (!elAlertsList) return;
+
+  elAlertsList.innerHTML = '';
+
+  const alerts = [];
+  for (const r of items) {
+    const ppfd = luxToPPFD(r.light_lux);
+    if (r.temperature_c != null && !inRange(r.temperature_c, THRESHOLDS.temperature_c)) {
+      alerts.push({ type: 'Temp', value: r.temperature_c, ts: r.ts, sensor: r.sensor_name || r.sensor_id });
+    }
+    if (r.humidity != null && !inRange(r.humidity, THRESHOLDS.humidity)) {
+      alerts.push({ type: 'Humidity', value: r.humidity, ts: r.ts, sensor: r.sensor_name || r.sensor_id });
+    }
+    const lightOk = ppfd != null
+      ? inRange(ppfd, THRESHOLDS.ppfd)
+      : inRange(r.light_lux, THRESHOLDS.light_lux);
+
+    if (!lightOk && (ppfd != null || r.light_lux != null)) {
+      alerts.push({
+        type: 'Light',
+        value: (ppfd != null ? `${ppfd} μmol/m²/s` : `${r.light_lux} lux`),
+        ts: r.ts,
+        sensor: r.sensor_name || r.sensor_id
+      });
+    }
   }
-  
-  if (humidityStatus === 'danger') {
-    addAlert(`CRITICAL Humidity: ${Math.round(sensorData.humidity)}%`, 'danger');
-  } else if (humidityStatus === 'warn') {
-    addAlert(`Humidity ALERT: ${Math.round(sensorData.humidity)}%`, 'warn');
+
+  if (!alerts.length) {
+    elAlertsList.innerHTML = `<li><span class="badge ok">OK</span> No anomalies detected • just now</li>`;
+    return;
   }
-  
-  if (lightStatus === 'danger') {
-    addAlert(`CRITICAL Light: ${Math.round(sensorData.light)} μmol/m²/s`, 'danger');
-  } else if (lightStatus === 'warn') {
-    addAlert(`Light ALERT: ${Math.round(sensorData.light)} μmol/m²/s`, 'warn');
-  }
-  
-  // If no alerts, show normal status message
-  if (alertsList.children.length === 0) {
-    addAlert('Optimal environmental conditions', 'ok');
+
+  for (const a of alerts.slice(0, 10)) {
+    const li = document.createElement('li');
+    li.innerHTML = `<span class="badge warn">ALERT</span> ${a.type} out of range (${a.value}) • ${timeAgo(a.ts)} • ${a.sensor}`;
+    elAlertsList.appendChild(li);
   }
 }
 
-// --- Add alert to list ---
-function addAlert(message, type) {
-  const alertsList = document.getElementById('alertsList');
-  const li = document.createElement('li');
-  
-  let timeText = '2 min ago';
-  if (sensorData.lastUpdate) {
-    const now = new Date();
-    const diffMs = now - sensorData.lastUpdate;
-    const diffMins = Math.round(diffMs / 60000);
-    timeText = `${diffMins} min ago`;
-  }
-  
-  li.innerHTML = `<span class="badge ${type}">${getAlertTypeText(type)}</span> ${message} • ${timeText}`;
-  alertsList.appendChild(li);
-}
-
-// --- Get text for alert type ---
-function getAlertTypeText(type) {
-  switch(type) {
-    case 'danger': return 'Critical';
-    case 'warn': return 'Alert';
-    case 'ok': return 'OK';
-    default: return 'Info';
-  }
-}
-
-// --- Update last update ---
-function updateLastUpdate() {
-  const lastUpdateElement = document.getElementById('lastUpdate');
-  if (sensorData.lastUpdate) {
-    const now = new Date();
-    const diffMs = now - sensorData.lastUpdate;
-    const diffMins = Math.round(diffMs / 60000);
-    lastUpdateElement.textContent = `${diffMins} min ago`;
-  }
-}
-
-// --- Simulate data refresh ---
-function simulateRefresh() {
-  // Simulate new sensor data (replace with real Arduino data)
-  sensorData = {
-    temperature: 24 + (Math.random() * 4 - 2), // ±2°C variation
-    humidity: 60 + (Math.random() * 20 - 10), // ±10% variation
-    light: 800 + (Math.random() * 400 - 200), // ±200 PPFD variation
-    lastUpdate: new Date()
-  };
-  
-  updateUI();
-}
-
-// --- Simulate data export ---
-function simulateExport() {
+function exportCSV(items) {
+  if (!items || !items.length) return;
+  const header = ['sensor_id','sensor_name','ts','temperature_c','humidity','light_lux','ppfd_est'];
+  const rows = items.map(r => ([
+    r.sensor_id,
+    (r.sensor_name || ''),
+    r.ts,
+    (r.temperature_c ?? ''),
+    (r.humidity ?? ''),
+    (r.light_lux ?? ''),
+    luxToPPFD(r.light_lux) ?? ''
+  ]));
+  const csv = [header.join(','), ...rows.map(r=>r.join(','))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  const csv = buildCSV();
-  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-  a.href = URL.createObjectURL(blob);
-  a.download = `sensor_data_${new Date().toISOString().slice(0,10)}.csv`;
+  a.href = url;
+  const stamp = new Date().toISOString().replace(/[:.]/g,'-');
+  a.download = `sensor_readings_${stamp}.csv`;
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(a.href);
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
-// --- Build CSV with data ---
-function buildCSV() {
-  const rows = ['Sensor,Value,Unit,Status,Optimal Range'];
-  rows.push(`Temperature,${sensorData.temperature.toFixed(1)},°C,${checkSensorStatus('temperature', sensorData.temperature)},${optimalRanges.temperature.min}-${optimalRanges.temperature.max}°C`);
-  rows.push(`Humidity,${Math.round(sensorData.humidity)},%,${checkSensorStatus('humidity', sensorData.humidity)},${optimalRanges.humidity.min}-${optimalRanges.humidity.max}%`);
-  rows.push(`Light PPFD,${Math.round(sensorData.light)},μmol/m²/s,${checkSensorStatus('light', sensorData.light)},${optimalRanges.light.min}-${optimalRanges.light.max} μmol/m²/s`);
-  rows.push(`Export date,${new Date().toLocaleString('en-US')}`);
-  return rows.join('\n');
-}
-
-// --- Change configuration based on crop ---
-function setCrop(cropType) {
-  if (cropSettings[cropType]) {
-    currentCrop = cropType;
-    optimalRanges.temperature = cropSettings[cropType].temperature;
-    optimalRanges.humidity = cropSettings[cropType].humidity;
-    optimalRanges.light = cropSettings[cropType].light;
-    
-    // Update range texts in interface
-    document.querySelectorAll('.delta')[0].textContent = `Range: ${optimalRanges.temperature.min}-${optimalRanges.temperature.max}°C`;
-    document.querySelectorAll('.delta')[1].textContent = `Range: ${optimalRanges.humidity.min}-${optimalRanges.humidity.max}%`;
-    document.querySelectorAll('.delta')[2].textContent = `Range: ${optimalRanges.light.min}-${optimalRanges.light.max} μmol/m²/s`;
-    
-    updateUI();
+async function loadAndRender() {
+  try {
+    const latest = await fetchLatest();
+    renderKPIs(latest);
+    renderList(latest);
+    renderAlerts(latest);
+  } catch (err) {
+    console.error('Error fetching latest readings:', err);
+    // Feedback mínimo en UI
+    elKpiStatus && (elKpiStatus.textContent = 'Error');
   }
 }
 
-// --- Initialize interface ---
-updateUI();
+// Eventos UI
+btnRefresh && btnRefresh.addEventListener('click', loadAndRender);
+btnExport && btnExport.addEventListener('click', async () => {
+  try {
+    const data = await fetchLatest();
+    exportCSV(data);
+  } catch (e) {
+    console.error('Export failed:', e);
+  }
+});
 
-// --- Simulate automatic update every 30 seconds ---
-setInterval(simulateRefresh, 30000);
+// Cargar al iniciar y refrescar cada 30s
+window.addEventListener('DOMContentLoaded', () => {
+  loadAndRender();
+  setInterval(loadAndRender, 30000);
+});
