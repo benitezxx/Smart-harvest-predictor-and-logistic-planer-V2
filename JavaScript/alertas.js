@@ -1,3 +1,6 @@
+// Como todo vive en http://localhost/ProyectoAgiles
+const API = '/ProyectoAgiles/PHP';
+
 // --- Responsive sidebar ---
 const sidebar = document.getElementById('sidebar');
 document.getElementById('openSidebar')?.addEventListener('click', ()=> sidebar.classList.add('open'));

@@ -1,4 +1,6 @@
-const API = 'http://127.0.0.1:8000';
+// Como todo vive en http://localhost/ProyectoAgiles
+const API = '/ProyectoAgiles/PHP';
+
 
 // --- Responsive sidebar ---
 const sidebar = document.querySelector('.sidebar');

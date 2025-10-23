@@ -1,3 +1,6 @@
+// Como todo vive en http://localhost/ProyectoAgiles
+const API = '/ProyectoAgiles/PHP';
+
 const form = document.getElementById('loginForm');
 const userId = document.getElementById('userId');
 const password = document.getElementById('password');
