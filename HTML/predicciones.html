@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AgroFlux | Yield Predictions</title>
+  <link rel="stylesheet" href="../CSS/predicciones.css" />
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="badge">AF</div>
+      <div class="brand-title">AgroFlux</div>
+      <button id="closeSidebar" class="icon-btn" aria-label="Close menu">✕</button>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="../HTML/dashboard.html">Dashboard</a></li>
+        <li><a href="../HTML/sensores.html">Sensors</a></li>
+        <li><a href="../HTML/alertas.html">Alerts</a></li>
+        <li class="active"><a href="../HTML/predicciones.html">Predictions</a></li>
+        <li><a href="../HTML/perfil.html">Profile</a></li>
+      </ul>
+    </nav>
+    <div class="sidebar-footer">v0.1 • Arduino • AI</div>
+  </aside>
+
+  <!-- Page -->
+  <main class="page">
+    <header class="topbar">
+      <button id="openSidebar" class="icon-btn" aria-label="Open menu">☰</button>
+      <div class="search">
+        <input type="search" placeholder="Search predictions..." />
+      </div>
+      <span class="chip">admin@agroflux</span>
+    </header>
+
+    <section class="content">
+      <div class="section-header">
+        <div>
+          <h1>Yield Predictions</h1>
+          <p class="muted">AI-powered crop yield forecasting based on environmental data</p>
+        </div>
+        <div class="actions">
+          <button id="btnTrainModel" class="btn btn-ghost">Train Model</button>
+          <button id="btnGeneratePrediction" class="btn btn-primary">Generate Prediction</button>
+          <button id="btnExportPredictions" class="btn btn-ghost">Export</button>
+        </div>
+      </div>
+
+      <!-- Prediction Input Parameters -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Prediction Parameters</h3>
+        </div>
+        <div class="prediction-params">
+          <div class="param-group">
+            <label for="cropType">Crop Type</label>
+            <select id="cropType">
+              <option value="tomato">Tomato</option>
+              <option value="lettuce">Lettuce</option>
+              <option value="strawberry">Strawberry</option>
+              <option value="pepper">Pepper</option>
+            </select>
+          </div>
+          <div class="param-group">
+            <label for="growthStage">Growth Stage</label>
+            <select id="growthStage">
+              <option value="early">Early Growth</option>
+              <option value="vegetative">Vegetative</option>
+              <option value="flowering">Flowering</option>
+              <option value="fruiting">Fruiting</option>
+            </select>
+          </div>
+          <div class="param-group">
+            <label for="daysSincePlanting">Days Since Planting</label>
+            <input type="number" id="daysSincePlanting" value="45" min="1" max="365">
+          </div>
+          <div class="param-group">
+            <label for="locationZone">Location Zone</label>
+            <select id="locationZone">
+              <option value="lot-a">Lot A</option>
+              <option value="lot-b">Lot B</option>
+              <option value="lot-c">Lot C</option>
+              <option value="greenhouse">Greenhouse</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Current Environmental Conditions -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Current Environmental Data</h3>
+          <span class="muted small">Based on latest sensor readings</span>
+        </div>
+        <div class="environmental-data">
+          <div class="env-metric">
+            <span class="metric-label">Avg Temperature</span>
+            <span class="metric-value" id="currentTemp">-- °C</span>
+          </div>
+          <div class="env-metric">
+            <span class="metric-label">Avg Humidity</span>
+            <span class="metric-value" id="currentHumidity">-- %</span>
+          </div>
+          <div class="env-metric">
+            <span class="metric-label">Avg Light</span>
+            <span class="metric-value" id="currentLight">-- μmol/m²/s</span>
+          </div>
+          <div class="env-metric">
+            <span class="metric-label">Data Period</span>
+            <span class="metric-value" id="dataPeriod">Last 7 days</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Prediction Results -->
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h3>Yield Prediction</h3>
+          </div>
+          <div class="prediction-result">
+            <div class="prediction-main">
+              <div class="predicted-yield" id="predictedYield">--</div>
+              <div class="yield-unit">kg/hectare</div>
+            </div>
+            <div class="prediction-confidence">
+              <div class="confidence-label">AI Confidence</div>
+              <div class="confidence-value" id="confidenceValue">--%</div>
+              <div class="confidence-bar">
+                <div class="confidence-fill" id="confidenceFill"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>Factors Analysis</h3>
+          </div>
+          <div class="factors-analysis" id="factorsAnalysis">
+            <div class="factor neutral">
+              <span class="factor-label">No prediction generated</span>
+              <span class="factor-impact">--</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Historical Predictions -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Prediction History</h3>
+        </div>
+        <div class="table-wrap">
+          <table id="predictionsTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Crop</th>
+                <th>Predicted Yield</th>
+                <th>Actual Yield</th>
+                <th>Accuracy</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="predictionsBody">
+              <!-- Dynamic content -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- AI Model Information -->
+      <div class="card">
+        <div class="card-header">
+          <h3>AI Model Information</h3>
+        </div>
+        <div class="model-info">
+          <div class="info-item">
+            <span class="info-label">Model:</span>
+            <span class="info-value">scikit-learn Random Forest</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Algorithm:</span>
+            <span class="info-value">Ensemble Learning</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Training Data:</span>
+            <span class="info-value">Historical sensor data + crop parameters</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Features Used:</span>
+            <span class="info-value">Temperature, Humidity, Light, Crop Type, Growth Stage, Days</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Model Accuracy:</span>
+            <span class="info-value" id="modelAccuracy">--%</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="../JavaScript/predicciones.js"></script>
+</body>
+</html>
